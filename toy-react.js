@@ -36,6 +36,9 @@ export class Component {
     }
 
 }
+export function render(component,parent){
+    parent.appendChild(component.root);
+}
 export function createElement(type, attributes, ...children) {
     let el;
     if (typeof type === 'string') {

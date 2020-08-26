@@ -7,8 +7,15 @@ export class ElementWrapper {
         if (name.match(/^on([\s\S]+)/)) {
             console.log('addlistener');
             this.root.addEventListener(RegExp.$1.replace(/^[\s\S]/, c => c.toLowerCase()), value);
-        } else {
-            this.root.setAttribute(name, value);
+        }
+
+        else {
+            if (name.match(/className/)) {
+                this.root.setAttribute('class', value);
+
+            } else {
+                this.root.setAttribute(name, value);
+            }
         }
     }
     appendChild(component) {
@@ -54,26 +61,33 @@ export class Component {
     render() {
     }
     rerender() {
-        this._range.deleteContents();
-        this[RENDER_TO_DOM](this._range);
+        const oldrange = this._range;
+
+        const range = document.createRange();
+        range.setStart(oldrange.startContainer, oldrange.startOffset);
+        range.setEnd(oldrange.startContainer, oldrange.startOffset);
+        this[RENDER_TO_DOM](range);
+        
+        oldrange.setStart(range.endContainer, range.endOffset);
+        oldrange.deleteContents();
     }
     setState(newState) {
-        if (this.state === null || typeof this.state === 'object') {
+        if (this.state === null || typeof this.state !== 'object') {
             this.state = newState;
             this.rerender();
             return;
         }
 
         let merge = (oldState, newState) => {
-            for (const k in newState) {
-                if (newState[k] !== null && typeof newState === 'object') {
-                    merge(oldState[k], newState[k]);
-                } else {
+            for (let k in newState) {
+                if (oldState[k] === null || typeof oldState[k] !== 'object') {
                     oldState[k] = newState[k];
+                } else {
+                    merge(oldState[k], newState[k]);
                 }
             }
         }
-        merge(this.setState, newState);
+        merge(this.state, newState);
         this.rerender();
     }
 
@@ -97,6 +111,10 @@ export function createElement(type, attributes, ...children) {
     }
     const insertChildren = (children) => {
         for (const child of children) {
+            if (child === null) {
+                continue;
+            }
+
             if (Array.isArray(child)) {
                 insertChildren(child);
             }

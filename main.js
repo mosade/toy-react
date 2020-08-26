@@ -1,16 +1,17 @@
 import { createElement, Component, render } from './toy-react';
 class MyComponent extends Component {
+    constructor() {
+        super();
+        this.state = { a: 1 };
+    }
     render() {
         return <div>
-            {this.children}
+            <button onClick={() => { this.setState({a:++this.state.a}) }}>click</button>
+            {this.state.a.toString()}
         </div>
     }
 }
 
-render(<MyComponent id='mc' class='mce'>
-    <div>123</div>
-    <div>456
-    <h1>789</h1>
-    </div>
+render(<MyComponent >
 </MyComponent>, document.body);
 
